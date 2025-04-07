@@ -14,10 +14,12 @@ export class AuthGuard implements CanActivate {
             const payload = this.jwtService.decode(token);
             console.log(payload);
             request.user = payload;
+
         }
         catch {
             throw new UnauthorizedException('Invalid Token')
         }
+        
         return true;
     }
     private extractTokenFromHeader(request: Request): string | null {

@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation"; // Import redirect function
 
 import DeviceDetails from "@/components/DeviceDetails";
 import axiosInstance from "@/lib/axiosInstance";
@@ -9,16 +10,20 @@ export default async function DevicePage({ params }: { params: Promise<{ id: str
 
     const accessToken = cookieStore.get('access_token')?.value; // Retrieve access_token from cookies
 
-    const Device = await axiosInstance.get(`devices/${id}`, {
-        headers: {
-            Authorization: `Bearer ${accessToken}`, // Pass Bearer token explicitly
-        },
-    }).then((res) => res.data);
-  
-    console.log(Device)
+    let Device;
+
+    try {
+        Device = await axiosInstance.get(`devices/${id}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`, // Pass Bearer token explicitly
+            },
+        }).then((res) => res.data);
+    } catch (error) {
+        redirect('/'); 
+    }
 
     return (
-        <div >
+        <div>
             <DeviceDetails device={Device} />
         </div>
     );

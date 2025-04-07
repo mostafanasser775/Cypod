@@ -1,23 +1,25 @@
 import React from 'react';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation'; // Import redirect function
 
 import axiosInstance from '@/lib/axiosInstance';
 import DevicesTable from '@/components/DevicesTable';
-import Loading from './loading'; // Import the loading component
 
 export default async function HomePage() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('access_token')?.value; // Retrieve access_token from cookies
 
-  const Devices = await axiosInstance.get("devices", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`, // Pass Bearer token explicitly
-    },
-  }).then((res) => res.data);
+  let Devices = [];
 
-  console.log(Devices);
-  if (!Devices) {
-    return <Loading />; // Use the loading component
+  try {
+    Devices = await axiosInstance.get("devices", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // Pass Bearer token explicitly
+      },
+    }).then((res) => res.data);
+  } catch (error) {
+    console.error("Failed to fetch devices:", error);
+    redirect('/login'); // Redirect to login page on failure
   }
 
   return (

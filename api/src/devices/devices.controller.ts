@@ -8,7 +8,8 @@ import { RolesGuard } from 'src/guards/roles.guard';
 @Controller('devices')
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) { }
-
+  @UseGuards(RolesGuard)
+  @Roles(Role.Admin, Role.Operator)
   @Get()
   findAll() {
     return this.devicesService.findAll();
