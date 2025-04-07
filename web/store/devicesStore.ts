@@ -1,0 +1,122 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { create } from 'zustand'
+import axios from 'axios'
+import { z } from 'zod'
+import { addToast } from '@heroui/toast'
+import axiosInstance from '@/lib/axiosInstance'
+import { userSchema } from '@/schema/user'
+
+import { Device } from '@/schema/device'
+
+
+export type State = {
+  initalized: boolean
+  pending: boolean
+  devices: Device[]
+}
+export type Actions = {
+  getCustomers: () => void
+  addCustomer: (user: z.infer<typeof userSchema>) => Promise<boolean>
+  deleteCustomer: (customerId: number) => Promise<boolean>
+}
+
+export const deviceStore = create<State & Actions>()((set) => ({
+  initalized: false,
+  pending: false,
+  devices: [],
+
+  setCustomers: async (Customers) => { set({ customers: Customers, initalized: true }) },
+
+  addCustomer: async (Customer) => {
+    set({ pending: true });
+    try {
+      const response = await axiosInstance.post('api/customers/add', Customer);
+      const data = await response.data;
+
+      set((state) => ({ ...state, customers: [...state.customers, data] }));
+
+      addToast({
+        title: "Success",
+        description: data.message,
+        color: 'success',
+      })
+
+      return true
+    } catch (error) {
+      addToast({
+        title: "Error",
+        description: "Error adding Customer. Please try again.",
+        color: 'danger',
+      })
+
+      return false
+    } finally {
+      set({ pending: false });
+    }
+  },
+
+  editCustomer: async (id, Customer) => {
+    set({ pending: true });
+    try {
+      const response = await axiosInstance.put(`api/customers/update/${id}`, Customer);
+      const data = await response.data;
+
+      set((state) => ({ ...state, customers: state.customers.map((customer) => customer.id === id ? data : customer) }));
+      addToast({
+        title: "Success",
+        description: data.message,
+        color: 'success',
+      })
+
+      return true
+    } catch (error) {
+      addToast({
+        title: "Error",
+        description: "Error updating Customer. Please try again.",
+        color: 'danger',
+      })
+
+      return false
+    } finally {
+      set({ pending: false });
+    }
+  },
+  getCustomers: async () => {
+    axios.get('/api/customers').then((res) => {
+      set(() => ({ customers: res.data }))
+    }).catch((error) => console.log(error))
+  },
+
+  // delete customer by id
+  deleteCustomer: async (customerId) => {
+    try {
+      set({ pending: true });
+      const res = await axiosInstance.delete(`api/customers/delete/${customerId}`)
+
+      set(state => ({ customers: state.customers.filter(x => x.id !== customerId) }))
+
+      addToast({
+        title: "Success",
+        description: res.data,
+        color: 'success',
+      })
+
+      return true
+    } catch (error: any) {
+      addToast({
+        title: "Error",
+        description: "Error Deleting Customer. Please try again.",
+        color: 'danger',
+      })
+
+      return false;
+    } finally {
+      set({ pending: false });
+    }
+
+
+  },
+
+
+}))
+
