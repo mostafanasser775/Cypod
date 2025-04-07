@@ -1,7 +1,6 @@
 export default function Loading() {
   return (
     <div className="p-6 max-w-[1400px] mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Users Page</h1>
       <div className="border border-gray-200 rounded-md shadow-sm">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">

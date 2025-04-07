@@ -1,23 +1,45 @@
 'use client'
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { Card, CardBody } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/table";
 import { Tooltip } from "@heroui/tooltip";
+import dynamic from "next/dynamic";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from "recharts";
 
 import { deviceStore } from "@/store/devicesStore";
 import { Device } from "@/schema/device";
+import { Button } from "@heroui/button";
+import Link from "next/link";
+
+// Dynamically import the map component to avoid SSR issues
+const Map = dynamic(() => import("@/components/Map"), { ssr: false });
 
 export default function DevicesTable({ Devices }: { Devices: Device[] }) {
   const { setDevices, devices, initalized } = deviceStore();
-  
 
   useEffect(() => {
     if (devices.length <= 0) {
       setDevices(Array.isArray(Devices) ? Devices : [Devices]);
     }
   }, []);
+
+  const deviceData = initalized ? devices : Devices;
+
+  const chartData = deviceData.map((device) => ({
+    name: device.name,
+    powerConsumption:
+      typeof device.totalPowerConsumptionSum === "number"
+        ? device.totalPowerConsumptionSum
+        : typeof device.totalPowerConsumptionSum === "object"
+        ? Object.values(device.totalPowerConsumptionSum).reduce((sum, value) => {
+            const numericValue = parseFloat(value.split(" ")[0]);
+
+            return sum + (isNaN(numericValue) ? 0 : numericValue);
+          }, 0)
+        : parseFloat(device.totalPowerConsumptionSum || "0"),
+  }));
 
   return (
     <div>
@@ -50,9 +72,10 @@ export default function DevicesTable({ Devices }: { Devices: Device[] }) {
               <TableColumn>HUMIDITY</TableColumn>
               <TableColumn>LOCATION</TableColumn>
               <TableColumn>TOTAL POWER</TableColumn>
+              <TableColumn>Actions</TableColumn>
             </TableHeader>
             <TableBody>
-              {(initalized ? devices : Devices).map((device: Device) => (
+              {deviceData.map((device: Device) => (
                 <TableRow
                   key={device.id}
                   className={`h-16 ${device.status === "on" ? "bg-success/10" : "bg-danger/10"}`}
@@ -92,10 +115,47 @@ export default function DevicesTable({ Devices }: { Devices: Device[] }) {
                         : JSON.stringify(device.totalPowerConsumptionSum)}
                     </span>
                   </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" color="primary" as={Link} href={`/devices/${device.id}`}>View</Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+
+          <Divider />
+
+          {/* Map Section */}
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold">Device Locations</h2>
+            <Suspense fallback={<div>loading...</div>}>
+              <Map
+                markers={deviceData.map((device) => ({
+                  lat: device.lat,
+                  lng: device.lng,
+                  label: device.name,
+                }))}
+              />
+            </Suspense>
+          </div>
+
+          {/* Chart Section */}
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold">Power Consumption Chart</h2>
+            <BarChart
+              data={chartData}
+              height={300}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              width={600}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <RechartsTooltip />
+              <Legend />
+              <Bar dataKey="powerConsumption" fill="#4bc0c0" />
+            </BarChart>
+          </div>
         </CardBody>
       </Card>
     </div>
