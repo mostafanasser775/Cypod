@@ -16,33 +16,25 @@ import NextLink from "next/link";
 import clsx from "clsx";
 
 import { siteConfig } from "@/config/site";
-import { ThemeSwitch } from "@/components/theme-switch";
-import {
-  TwitterIcon,
-  GithubIcon,
-  DiscordIcon,
-  HeartFilledIcon,
-  SearchIcon,
-  Logo,
-} from "@/components/icons";
 
 export const Navbar = () => {
- 
-
   return (
     <HeroUINavbar maxWidth="xl" position="sticky" className="border shadow">
-      <NavbarContent className="flex basis-1/5 sm:basis-full" justify="center">
-    
-    <NavbarItem as={NextLink} href="/" className="flex items-center">
-    Kanban
-      </NavbarItem>  
-      <NavbarItem as={NextLink} href="/customers" className="flex items-center">
-    Customers
-      </NavbarItem>  
-       </NavbarContent>
-   
-      
-    
+      <NavbarContent className="flex basis-1/5 sm:basis-full justify-between" justify="start">
+     
+     
+        <NavbarItem as={NextLink} href="/" className="flex items-center">
+          Devices
+        </NavbarItem>
+       
+      </NavbarContent>
+      <NavbarContent className="flex basis-1/5 sm:basis-full justify-between" justify="end">
+     
+  
+     <NavbarItem as={NextLink} href="/login" className="flex items-center">
+       Sign In
+     </NavbarItem>
+   </NavbarContent>
     </HeroUINavbar>
   );
 };

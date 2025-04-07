@@ -23,7 +23,7 @@ export const DeviceSchema = z.object({
   humidity: z.string(),
   lat: z.number(),
   lng: z.number(),
-  totalPowerConsumption: z.union([z.string(), MonthlyPowerConsumption]),
+  totalPowerConsumptionSum: z.union([z.string(), MonthlyPowerConsumption]),
 });
 
 export type Device = z.infer<typeof DeviceSchema>;

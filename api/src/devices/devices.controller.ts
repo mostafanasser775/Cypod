@@ -13,8 +13,8 @@ export class DevicesController {
   findAll() {
     return this.devicesService.findAll();
   }
-  @UseGuards(RolesGuard)
-  @Roles(Role.Admin)
+   @UseGuards(RolesGuard)
+   @Roles(Role.Admin)
   @Get(':id')
   findOne(@Param('id') id: string) {
 
